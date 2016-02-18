@@ -1,6 +1,6 @@
 from pymongo import MongoClient
 from idCrawler import *
-from twython import TwythonRateLimitError
+
 
 def verify(text, matchers, de_matchers):
 	for de_mactcher in de_matchers:
@@ -17,6 +17,21 @@ def insertTweets(tweets, collectionName):
 	collection = MongoClient("localhost", 27017)["idea"][collectionName]
 	collection.insert(tweets)
 	print("{} tweets inserted".format(len(tweets)))
+
+
+
+def targetDetection(collectionName, matchers, de_mactchers):
+	positive_profiles = []
+	collection = MongoClient('localhost', 27017)['idea'][collectionName]
+	for profile in collection.find():
+		description = profile['description'].lower()
+		if verify(description, matchers, de_mactchers):
+			positive_profiles.append(profile)
+
+	return positive_profiles
+
+
+
 
 groups = ['Sectioned_','AmandaGreenUK','bondobbs','OfficialBPDChat','HealingFromBPD', 'bpdguy','bpdsurvive','JurmaineHealth','BPD_BC','SympoPsychiatry','hope4healing','borderlinepd101']
 bipolar_groups = ['BipolarDisorder', 'BipolarRecovery', 'BipolarUK', 'PsychCentral', 'DBSAlliance', 'NLOBipolar', 'BipolarUs','Skytherapist', 'chatobstewart', 'natasha_tracy', 'erin_michalak', 'CREST_BD', 'namiohio', 'ResearchAtCRI','Bipolar_Blogs',' _BipolarManiac', 'YoungMindsUK']
@@ -36,7 +51,7 @@ for i, user_id in enumerate(followers[len(user_profiles):]):
 
 
 print("Collection finsihed")
-
+insertTweets(user_profiles, 'suspecious_profiles')
 
 matchers = ['borderline','bpd','disorder','ptsd','depression','mdd','depressive']
 positive_users = []		
@@ -46,3 +61,8 @@ for user_profile in user_profiles:
 		positive_users.append(user_profile)
 
 print("Positive users: {}".format(len(positive_users)))
+
+
+
+matchers = ['borderline', 'bpd']
+targetDetection('suspecious_profiles', matchers, [])

@@ -59,13 +59,13 @@ def disorderDetect(tweets, matchers):
 
 
 
-collection = MongoClient('localhost',27017)['idea']['geo_tweets_2']
+collection = MongoClient('localhost',27017)['idea']['BPD_581_emotion']
 #collection = MongoClient('140.114.77.23',27017)['idea']['test']
 
 
-patients_tweets = getPatientsTweets(collection)
+#patients_tweets = getPatientsTweets(collection)
 
-insertTweets(patients_tweets, "paitents_tweets")
+#insertTweets(patients_tweets, "paitents_tweets")
 
-matchers = ['bipolar','MDD', 'depressive','bpd','ptsd','sad','depression']
-postive_tweets = disorderDetect(patients_tweets, matchers)
+#matchers = ['bipolar','MDD', 'depressive','bpd','ptsd','sad','depression']
+#postive_tweets = disorderDetect(patients_tweets, matchers)
