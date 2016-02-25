@@ -1,10 +1,14 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, jsonify
 import requests
 import os
 
 app = Flask(__name__)
 
 
+@app.route('/json')
+def getJSON():
+    result = {"yes":"baby"}
+    return jsonify(result)
 
 @app.route('/', methods=['GET', 'POST'])
 def index():

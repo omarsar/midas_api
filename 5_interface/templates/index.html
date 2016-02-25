@@ -24,7 +24,22 @@
         <h4>{{ error }}</h4>
       {% endfor %}
     </div>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/superagent/1.2.0/superagent.js"></script>
+
+
+
     <script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
     <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
-  </body>
+    <script type="text/javascript"> 
+    request = superagent
+    request
+   .get('/json')
+   .end(function(err, res){
+    alert(JSON.stringify(res.body))
+   });
+
+
+    </script>
+
+    </body>
 </html>
