@@ -38,7 +38,7 @@
         request = superagent
         request
    .get('/predict')
-   .query({screen_name: "omarsar0" })
+   .query({screen_name: form.screen_name.value })
    .end(function(err, res){
     alert(JSON.stringify(res.body))
    });
