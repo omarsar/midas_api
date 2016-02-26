@@ -134,29 +134,50 @@ def getFollowers(screen_name):
 
 
 
-def getUserProfile(user_id):
+def getUserProfile(user_id=None, screen_name=None):
+
+	if user_id is None and screen_name is None:
+		return None
+
 	consumer_key = "MLGdNZCfmzGthHTAyJU4KFvbU"
 	consumer_secret ="Tfp7DIZcJLbnS8BR5CWQmZklrhsbtc3fMfssKPT4SZoYsPiQKw"
 	access_token ="2383540880-s2C8xPgA4ITF7QnLRFnHK1es2UEbmW8qHQ87sX5"
 	access_token_secret ="kLYgBTPeslLgaFugCx0PoiBpPIKnyCBEVfqqJCkjsSKpP"
-	twitter = Twython(consumer_key, consumer_secret,access_token,access_token_secret )
-	while(True):
-		try:
-			user_profile = twitter.show_user(id = user_id)
-			return user_profile
-		except TwythonRateLimitError:
-			print("Fall asleep")
-			sleep(300)
-			pass
-		except  TwythonAuthError:
-			print("Bad Authentication")
-			return []
-		except TwythonError:
-			print("404 not found")
-			return []
+	twitter = Twython(consumer_key, consumer_secret,access_token,access_token_secret)
 
-	
-	
+	if screen_name:
+		while(True):
+			try:
+				user_profile = twitter.show_user(screen_name=screen_name)
+				return user_profile
+			except TwythonRateLimitError:
+				print("Fall asleep")
+				sleep(300)
+				pass
+			except  TwythonAuthError:
+				print("Bad Authentication")
+				return []
+			except TwythonError:
+				print("404 not found")
+				return []
+	else:
+		while(True):
+			try:
+				user_profile = twitter.show_user(id = user_id)
+				return user_profile
+			except TwythonRateLimitError:
+				print("Fall asleep")
+				sleep(300)
+				pass
+			except  TwythonAuthError:
+				print("Bad Authentication")
+				return []
+			except TwythonError:
+				print("404 not found")
+				return []
+
+		
+		
 
 
 
@@ -165,5 +186,6 @@ def getUserProfile(user_id):
 
 
 if __name__ == '__main__':
-	print(getTweets(screen_name="BigDataBlogs", num =10))
+	#print(getTweets(screen_name="BigDataBlogs", num =10))
+	print(getUserProfile(screen_name="omarsar0"))
 	

@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Prediction Result</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet" media="screen">
+    <style>
+      .container {
+        
+      }
+      #profile_photo{
+        max-width: 70%;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+
+      
+      <div class="row">
+      <h1>Result of Our Calculations</h1>
+        <div class="col-sm-6 col-md-5">
+          <div class="thumbnail">
+          
+            <img id="profile_photo" src="http://pbs.twimg.com/profile_images/1980294624/DJT_Headshot_V2_400x400.jpg" alt="...">
+              <div class="caption">
+                <h3>{{profile["screen_name"]}}</h3>
+                <h4>{{report["probability"]}} of chance having BPD</h4>
+                <h5>Inferred Gender: Male</h5>
+                <h5>Inferred Age: {{report["age"]}}</h5>                
+              </div>
+            </div>
+          </div>
+          <div id="chart" class="col-sm-6 col-md-7">
+            
+          </div>
+
+        </div>
+        
+      </div>>
+    </div>
+
+  
+    <script src="//cdnjs.cloudflare.com/ajax/libs/superagent/1.2.0/superagent.js"></script>
+
+
+
+    <script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+    <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+    <script src="http://code.highcharts.com/highcharts.js"></script>
+    <script type="text/javascript"> 
+      var regular_users_features_mean = [ 0.47588507795281149,
+
+ 0.23118888013318159,
+ 0.1426922306733589,
+ 0.0043646143518730673,
+ 0.016526795705018669,
+ 0.32133473312100497,];
+      var patients_mean = [ 0.48380045654471177,
+ 0.24614504013999039,
+ 0.23790610878983889,
+ 0.016579886933928395,
+ 0.062074328169967587,
+ 0.41322070205802719,];
+
+$(function () { 
+    $('#chart').highcharts({
+        chart: {
+            type: 'bar'
+        },
+        title: {
+            text: 'Status Comparison'
+        },
+        xAxis: {
+            categories: ['Mentioning Frequency', 'Positive Ratio', 'Negative Ratio', 'Flips Ratio', "Combos Ratio", "First Pronoun Ratio"],
+             labels: {
+                style: {
+                    
+                    fontSize:'18px'
+                }
+            }
+        },
+        yAxis: {
+            title: {
+                text: 'Percentile'
+            }
+        },
+        series: [{
+            name: 'Screen_Name',
+            data: [0.1, 0.2, 0.03,0.4,0.3,0.005]
+        }, {
+            name: 'Regular Users',
+            data: regular_users_features_mean
+        },{
+          name:"Patients",
+          data:patients_mean
+        }
+        ]
+    });
+});
+
+
+
+
+
+      var x = 0;
+      
+
+       function get_prediction(form) {
+        request = superagent
+        request
+   .get('/predict')
+   .query({screen_name: form.screen_name.value })
+   .end(function(err, res){
+    alert(JSON.stringify(res.body))
+   });
+    }
+
+
+
+    
+   
+
+
+    </script>
+
+    </body>
+</html>

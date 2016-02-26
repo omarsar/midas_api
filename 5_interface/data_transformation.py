@@ -293,10 +293,6 @@ def getFlipsDuration(timeSeries, flips):
     timeSeries.loc[:,'dt'] = np.zeros(timeSeries.shape[0],dtype=float)
     timeSeries.loc[:-1,'dt'] = (timeSeries.index[1:].values - timeSeries.index[:-1].values).astype('timedelta64[s]') / np.timedelta64(60, 's')
     return timeSeries['dt'][:-1].values
-
-
-
-
             
             
             
@@ -350,7 +346,7 @@ def getPolFeature(groups):
             feature[i][8] = first_pronoun_ratio
             feature[i][9] = age
             feature[i][10] = gender
-            #feature[i][11:] = getEmotionRatio(timeSeries)
+            #feature[i][11:] = getEmotionRatio(timeSeries)  disable Carlos' Emotions
         features.append(feature)
     return features[0]
 
@@ -362,7 +358,7 @@ def getPolFeature(groups):
 
 
 
-def tweets_transform_pol(tweets):
+def extract_features_pol(tweets):
 	polared_tweets = sentiment_analyize(tweets)
 	processed_tweets = getUsersPolarities(polared_tweets)
 	timeSeries = timeSeriesTransform(processed_tweets)
@@ -381,10 +377,28 @@ def tfidf_classify(tweets):
 	result = tfidf_model.predict_proba([x])
 	return result[0]
 
-def pol_classify(tweets):
-	timeSeries = tweets_transform_pol(tweets)
-	result = pol_model.predict_proba(timeSeries)
-	return result[0]
+def pol_report(tweets):
+
+	features = extract_features_pol(tweets)
+	proba = pol_model.predict_proba(features)
+	
+	feature = features[0]
+	report = {}
+	report["tweets_length"] = len(tweets)
+	report["tweeting_frequency"] = feature[0]
+	report["mentioning_frequency"] = feature[1]
+	report["unique_mentioning"] = feature[2]
+	report["frequent_mentioning"] = feature[3]
+	report["positive_ratio"] = feature[4]
+	report["negative_ratio"] = feature[5]
+	report["flips_ratio"] = feature[6]
+	report["combos_ratio"] = feature[7]
+	report["first_pronoun_ratio"] = feature[8]
+	report["age"] = feature[9]
+	report["gender"] = "Male" if feature[9] < 0 else "Female"
+	report["probability"] = proba[0][1] 
+	
+	return report
 
 
 
@@ -392,9 +406,13 @@ def load_model(file_location):
     model = joblib.load(file_location)
     return model 
 
-
-
-tfidf_model = load_model("models/tfidf_forest/tfidf_forest")
-pol_model = load_model("models/pol_forest/pol_forest")
+print("Start loding scikit-lear models:")
+print("Loding Tf-iDF Veectorizor")
 tfidf_vectorizor = load_model("models/tfidf_vectorizor/tfidf_vectorizor")
+print("Loding Tf-iDF Random Forest")
+tfidf_model = load_model("models/tfidf_forest/tfidf_forest")
+print("Loding Patter of Life Random Forest")
+pol_model = load_model("models/pol_forest/pol_forest")
+print("All models loaded")
+
 

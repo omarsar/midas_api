@@ -2,8 +2,8 @@ from flask import Flask, render_template, request, jsonify
 import requests
 import os
 from sklearn.externals import joblib
-from idCrawler import getTweets
-from data_transformation import tfidf_classify, pol_classify
+from idCrawler import getTweets, getUserProfile
+from data_transformation import pol_report
 
 app = Flask(__name__)
 
@@ -11,19 +11,22 @@ app = Flask(__name__)
 
 
 @app.route('/predict')
-def getJSON():
+def getPrediction():
    
     if request.method == "GET":
         try:
             screen_name = request.args['screen_name']
             tweets = getTweets(screen_name=screen_name)
-            proba = pol_classify(tweets)
-            result = {"Probability of having BPD": proba[1]}
+            report = pol_report(tweets)
+            profile = getUserProfile(screen_name=screen_name)
+            
+            
 
         except Exception as e:
-            result = {"result":str(e)}
+            report = {"result":str(e)}
+            profile = report
     
-    return jsonify(result)
+    return render_template('prediction.html',report=report, profile=profile)
 
 
 @app.route('/', methods=['GET', 'POST'])
