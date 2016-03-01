@@ -1,67 +1,50 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <title>Prediction Result</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet" media="screen">
-    <style>
-      .container {
-        
-      }
-      #profile_photo{
-        max-width: 70%;
-      }
-    </style>
+{% extends "base.html" %}
+{% block content %}
+  <style>
+    .container {
+      
+    }
+    #profile_photo{
+      max-width: 70%;
+    }
+  </style>
   </head>
   <body>
-    <div class="container">
-
-      
-      <div class="row">
-      <h1>Result of Our Calculations</h1>
-        <div class="col-sm-6 col-md-5">
-          <div class="thumbnail">
-          
-            <img id="profile_photo" src="http://pbs.twimg.com/profile_images/1980294624/DJT_Headshot_V2_400x400.jpg" alt="...">
-              <div class="caption">
-                <h3>{{profile["screen_name"]}}</h3>
-                <h4>{{report["probability"]}} of chance having BPD</h4>
-                <h5>Inferred Gender: Male</h5>
-                <h5>Inferred Age: {{report["age"]}}</h5>                
-              </div>
+  <div class="container">
+    <div class="row">
+    <h1>Result of Our Calculations</h1>
+      <div class="col-sm-6 col-md-5">
+        <div class="thumbnail">
+          <img id="profile_photo" src={{profile["profile_image_url"]}} alt="...">
+            <div class="caption">
+              <h3><a href={{profile["url"]}}> @{{profile["screen_name"]}} </a></h3>
+              <h4>{{report["probability"]}} similar to BPD users</h4>
+              <h5>Inferred Gender: {{report["gender"]}}</h5>
+              <h5>Inferred Age: {{report["age"]}}</h5>                
             </div>
           </div>
-          <div id="chart" class="col-sm-6 col-md-7">
-            
-          </div>
-
         </div>
-        
-      </div>>
-    </div>
+        <div id="chart" class="col-sm-6 col-md-7">
+          
+        </div>
 
-  
-    <script src="//cdnjs.cloudflare.com/ajax/libs/superagent/1.2.0/superagent.js"></script>
+      </div>
+      
+    </div>>
+  </div>
+{% endblock %}
+{% block scripts %}  
 
-
-
-    <script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
-    <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
     <script src="http://code.highcharts.com/highcharts.js"></script>
     <script type="text/javascript"> 
-      var regular_users_features_mean = [ 0.47588507795281149,
+      var regular_users_features_mean = [  0.03997367,  0.47588508,  0.06263565,  0.12722761,  0.23050761, 0.22741574,  0.04881653, 0.0401365 ,  0.36727548];
 
- 0.23118888013318159,
- 0.1426922306733589,
- 0.0043646143518730673,
- 0.016526795705018669,
- 0.32133473312100497,];
-      var patients_mean = [ 0.48380045654471177,
- 0.24614504013999039,
- 0.23790610878983889,
- 0.016579886933928395,
- 0.062074328169967587,
- 0.41322070205802719,];
+      var patients_mean = [  0.04263636,  0.48380046,  0.05390836,  0.10271596,  0.24613367,
+        0.37916286,  0.18543966,  0.15075194,  0.47362924];
+
+      var target_feature = {{[report["tweeting_frequency"],report["mentioning_frequency"], report["unique_mentioning"],report["frequent_mentioning"],report["positive_ratio"],report["negative_ratio"], report["flips_ratio"], report["combos_ratio"], report["first_pronoun_ratio"]]|tojson}};
+      
+
 
 $(function () { 
     $('#chart').highcharts({
@@ -72,7 +55,7 @@ $(function () {
             text: 'Status Comparison'
         },
         xAxis: {
-            categories: ['Mentioning Frequency', 'Positive Ratio', 'Negative Ratio', 'Flips Ratio', "Combos Ratio", "First Pronoun Ratio"],
+            categories: ['Tweeting Frequency','Mentioning Frequency','Unique Mentioning','Frequent Mentioning', 'Positive Ratio', 'Negative Ratio', 'Flips Ratio', "Combos Ratio", "First Pronoun Ratio"],
              labels: {
                 style: {
                     
@@ -86,8 +69,8 @@ $(function () {
             }
         },
         series: [{
-            name: 'Screen_Name',
-            data: [0.1, 0.2, 0.03,0.4,0.3,0.005]
+            name: {{profile["screen_name"]|tojson}},
+            data: target_feature
         }, {
             name: 'Regular Users',
             data: regular_users_features_mean
@@ -123,6 +106,4 @@ $(function () {
 
 
     </script>
-
-    </body>
-</html>
+{% endblock %}

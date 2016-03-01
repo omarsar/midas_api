@@ -382,7 +382,7 @@ def pol_report(tweets):
 	features = extract_features_pol(tweets)
 	proba = pol_model.predict_proba(features)
 	
-	feature = features[0]
+	feature = scaler.transform(features)[0]
 	report = {}
 	report["tweets_length"] = len(tweets)
 	report["tweeting_frequency"] = feature[0]
@@ -394,8 +394,8 @@ def pol_report(tweets):
 	report["flips_ratio"] = feature[6]
 	report["combos_ratio"] = feature[7]
 	report["first_pronoun_ratio"] = feature[8]
-	report["age"] = feature[9]
-	report["gender"] = "Male" if feature[9] < 0 else "Female"
+	report["age"] = features[0][9]
+	report["gender"] = "Male" if features[0][10] < 0 else "Female"
 	report["probability"] = proba[0][1] 
 	
 	return report
@@ -413,6 +413,9 @@ print("Loding Tf-iDF Random Forest")
 tfidf_model = load_model("models/tfidf_forest/tfidf_forest")
 print("Loding Patter of Life Random Forest")
 pol_model = load_model("models/pol_forest/pol_forest")
+print("Loading Max Min Scaler")
+scaler = load_model("models/scaler/scaler")
+
 print("All models loaded")
 
 

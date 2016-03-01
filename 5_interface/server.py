@@ -5,6 +5,10 @@ from sklearn.externals import joblib
 from idCrawler import getTweets, getUserProfile
 from data_transformation import pol_report
 
+
+
+
+
 app = Flask(__name__)
 
 
@@ -19,6 +23,8 @@ def getPrediction():
             tweets = getTweets(screen_name=screen_name)
             report = pol_report(tweets)
             profile = getUserProfile(screen_name=screen_name)
+            profile["profile_image_url"] = profile["profile_image_url"].replace("normal.", "400x400.")
+
             
             
 
@@ -53,3 +59,4 @@ def index():
 
 if __name__ == '__main__':
     app.run(debug=True)
+    #app.run(debug=False, host= '0.0.0.0',port=80)
