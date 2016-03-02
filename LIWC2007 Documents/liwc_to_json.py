@@ -1,8 +1,8 @@
 import json
 
 file_path = "Dictionaries/LIWC2007_English080730.dic"
-categories_output_path = "categories.json"
-words_output_path = "words.json"
+categories_output_path = "../4_prediction_visualization/categories.json"
+words_output_path = "../4_prediction_visualization/words.json"
 f = open(file_path, 'r')
 categories = {}
 words = {}

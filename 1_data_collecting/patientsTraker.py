@@ -30,9 +30,18 @@ def targetDetection(collectionName, matchers, de_mactchers):
 
 	return positive_profiles
 
+def writeProfiles(profiles, file_name):
+	w = open(file_name, 'w')
+	for profile in profiles:
+		user_id = profile['id']
+		user_name = profile['screen_name'].replace("\n"," ").replace("\t"," ")
+		description = profile['description'].replace("\n"," ").replace("\t"," ").replace("\r"," ")
+		w.write("\t{}\t{}\t{}\n".format(description,user_name,user_id))
+	w.close()
 
 
 
+'''
 groups = ['Sectioned_','AmandaGreenUK','bondobbs','OfficialBPDChat','HealingFromBPD', 'bpdguy','bpdsurvive','JurmaineHealth','BPD_BC','SympoPsychiatry','hope4healing','borderlinepd101']
 bipolar_groups = ['BipolarDisorder', 'BipolarRecovery', 'BipolarUK', 'PsychCentral', 'DBSAlliance', 'NLOBipolar', 'BipolarUs','Skytherapist', 'chatobstewart', 'natasha_tracy', 'erin_michalak', 'CREST_BD', 'namiohio', 'ResearchAtCRI','Bipolar_Blogs',' _BipolarManiac', 'YoungMindsUK']
 print("Followers collections")
@@ -53,16 +62,23 @@ for i, user_id in enumerate(followers[len(user_profiles):]):
 print("Collection finsihed")
 insertTweets(user_profiles, 'suspecious_profiles')
 
-matchers = ['borderline','bpd','disorder','ptsd','depression','mdd','depressive']
+#matchers = ['borderline','bpd','disorder','ptsd','depression','mdd','depressive']
+matchers = ['bipolar']
+
+
+
+collection = MongoClient("localhost", 27017)["idea"]['suspecious_profiles']
+cursor = collection.find()
 positive_users = []		
-for user_profile in user_profiles:
+for user_profile in cursor
 	description = user_profile['description'].lower()
 	if verify(description, matchers, []):
 		positive_users.append(user_profile)
 
 print("Positive users: {}".format(len(positive_users)))
+positive_profiles
 
-
-
-matchers = ['borderline', 'bpd']
-targetDetection('suspecious_profiles', matchers, [])
+'''
+matchers = ['bipolar']
+dematchers = ['medical',"doctor","coach","therapist"]
+profiles = targetDetection('suspecious_profiles', matchers, dematchers)
