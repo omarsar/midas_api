@@ -9,12 +9,13 @@ include Mongo
 
 def post(payload)
 	payload = payload.to_json
-    uri = URI("http://140.114.77.14:8080/webresources/jammin/emotion")
+    uri = URI("http://192.168.2.30:8080/webresources/jammin/emotion")
 
      	req = Net::HTTP::Post.new(uri.path, initheader = {'Content-Type' =>'application/json'})
           
+     
           req.body = payload
-          response = Net::HTTP.new("140.114.77.14", 8080).start {|http| http.request(req) }
+          response = Net::HTTP.new("192.168.2.30", 8080).start {|http| http.request(req) }
           
 end
 
@@ -24,8 +25,8 @@ end
 
 
 mongo_client = MongoClient.new("localhost", 27017)
-insert_coll = mongo_client['idea']['coach_tweets_emotion']
-coll = mongo_client['idea']['coach_tweets_polarity']
+insert_coll = mongo_client['idea']['bipolar_emotion']
+coll = mongo_client['idea']['bipolar_polarity']
 
 processed_tweets = Set.new
 
@@ -61,7 +62,7 @@ puts "target_tweets length:#{target_tweets.length}"
 
 fail_count = 0
 
-uri = URI("http://140.114.77.14:8080/webresources/jammin/emotion")
+uri = URI("http://192.168.2.30:8080/webresources/jammin/emotion")
 dataList = []
 
 hit = 0
