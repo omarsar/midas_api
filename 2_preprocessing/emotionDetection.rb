@@ -25,8 +25,8 @@ end
 
 
 mongo_client = MongoClient.new("localhost", 27017)
-insert_coll = mongo_client['patients']['bipolar_clean']
-coll = mongo_client['idea']['bipolar_polarity']
+insert_coll = mongo_client['patients']['bipolar_experts']
+coll = mongo_client['idea']['bipolar_experts_polarity']
 #insert_coll = mongo_client['patients']['bb_mix']
 #coll = mongo_client['idea']['bb_mix_polarity']
 
