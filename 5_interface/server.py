@@ -14,6 +14,28 @@ app = Flask(__name__)
 
 
 
+@app.route('/predict_json')
+def getPrediction_json():
+    result = {}
+    if request.method == "GET":
+        try:
+            screen_name = request.args['screen_name']
+            tweets = getTweets(screen_name=screen_name)
+            report = pol_report(tweets)
+            profile = getUserProfile(screen_name=screen_name)
+            profile["profile_image_url"] = profile["profile_image_url"].replace("normal.", "400x400.")
+            #result = {"profile": profile, "report":report}
+            return jsonify(profile=profile, report=report)
+            
+
+        except Exception as e:
+            return jsonify(Error_message=str(e))
+            
+    
+  
+
+
+
 @app.route('/predict')
 def getPrediction():
    
