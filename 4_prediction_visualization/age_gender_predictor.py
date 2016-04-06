@@ -49,10 +49,14 @@ def get_gender(text):
 		if word in gender_lexica:
 			words_count += count
 			gender += count * gender_lexica[word]
+            
+		if words_count <= 0:
+			return 0
+		else:
 
-	gender = gender / words_count + gender_intercept
+			gender = gender / words_count + gender_intercept
 
-	return gender
+			return gender
 	
 # This function returns a float, representing the age. 
 
@@ -69,8 +73,10 @@ def get_age(text):
 		if word in age_lexica:
 			words_count +=count
 			age += count * age_lexica[word]
+	if words_count <= 0:
+		return -1
+	else:
+		age = age / words_count + age_intercept
 
-	age = age / words_count + age_intercept
-
-	return age
+		return age
 
