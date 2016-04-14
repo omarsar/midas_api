@@ -317,7 +317,7 @@ def getEmotionRatio(timeSeries):
 
 
 
-def getPolFeature(groups):
+def getPOLFeature(groups):
     features = []
     for group in groups:
         feature = np.zeros((len(group),11),dtype=float)
@@ -330,7 +330,9 @@ def getPolFeature(groups):
             negative_ratio = getNegativeRatio(timeSeries)
             positive_ratio = getPositiveRatio(timeSeries)
             flips_ratio = getFlipsCount(timeSeries) / tweets_length
-            combos_ratio = getCombosCount(timeSeries) / tweets_length
+            negative_combos = getCombosCount(timeSeries) / tweets_length
+            positive_combos = getCombosCount(timeSeries,matcher=1) / tweets_length
+
             first_pronoun_ratio = getFirstPronounCount(timeSeries) / tweets_length
             age = getAge(timeSeries)
             gender = getGender(timeSeries)
@@ -342,15 +344,15 @@ def getPolFeature(groups):
             feature[i][4] = positive_ratio
             feature[i][5] = negative_ratio
             feature[i][6] = flips_ratio
-            feature[i][7] = combos_ratio
-            feature[i][8] = first_pronoun_ratio
+            feature[i][7] = negative_combos
+            feature[i][8] = positive_combos
             feature[i][9] = age
             feature[i][10] = gender
-            #feature[i][11:] = getEmotionRatio(timeSeries)  disable Carlos' Emotions
+            
         features.append(feature)
     return features[0]
 
-    
+
     
 
 
@@ -362,7 +364,7 @@ def extract_features_pol(tweets):
 	polared_tweets = sentiment_analyize(tweets)
 	processed_tweets = getUsersPolarities(polared_tweets)
 	timeSeries = timeSeriesTransform(processed_tweets)
-	feature = getPolFeature([timeSeries])
+	feature = getPOLFeature([timeSeries])
 	return feature
 
 	
@@ -379,26 +381,26 @@ def tfidf_classify(tweets):
 
 def pol_report(tweets):
 
-	features = extract_features_pol(tweets)
-	proba = pol_model.predict_proba(features)
-	
-	feature = scaler.transform(features)[0]
-	report = {}
-	report["tweets_length"] = len(tweets)
-	report["tweeting_frequency"] = feature[0]
-	report["mentioning_frequency"] = feature[1]
-	report["unique_mentioning"] = feature[2]
-	report["frequent_mentioning"] = feature[3]
-	report["positive_ratio"] = feature[4]
-	report["negative_ratio"] = feature[5]
-	report["flips_ratio"] = feature[6]
-	report["combos_ratio"] = feature[7]
-	report["first_pronoun_ratio"] = feature[8]
-	report["age"] = features[0][9]
-	report["gender"] = "Male" if features[0][10] < 0 else "Female"
-	report["probability"] = proba[0][1] 
-	
-	return report
+    features = extract_features_pol(tweets)
+    bipolar_proba = bipolar_model.predict_proba(features)[0][1]
+    BPD_proba = BPD_model.predict_proba(features)[0][1]
+    feature = scaler.transform(features)[0]
+    report = {}
+    report["tweets_length"] = len(tweets)
+    report["tweeting_frequency"] = feature[0]
+    report["mentioning_frequency"] = feature[1]
+    report["unique_mentioning"] = feature[2]
+    report["frequent_mentioning"] = feature[3]
+    report["positive_ratio"] = feature[4]
+    report["negative_ratio"] = feature[5]
+    report["flips_ratio"] = feature[6]
+    report["negative_combos"] = feature[7]
+    report["positive_combos"] = feature[8]
+    report["age"] = features[0][9]
+    report["gender"] = "Male" if features[0][10] < 0 else "Female"
+    report["bipolar_probability"] = bipolar_proba
+    report["BPD_probability"] = BPD_proba
+    return report
 
 
 
@@ -406,13 +408,15 @@ def load_model(file_location):
     model = joblib.load(file_location)
     return model 
 
+
+
+
 print("Start loding scikit-lear models:")
-print("Loding Tf-iDF Veectorizor")
-tfidf_vectorizor = load_model("models/tfidf_vectorizor/tfidf_vectorizor")
-print("Loding Tf-iDF Random Forest")
-tfidf_model = load_model("models/tfidf_forest/tfidf_forest")
-print("Loding Patter of Life Random Forest")
-pol_model = load_model("models/pol_forest/pol_forest")
+
+print("Loding Bipolar Random Forest")
+bipolar_model = load_model("models/bipolar_forest/bipolar_forest")
+print("Loding BPD Random Forest")
+BPD_model = load_model("models/BPD_forest/BPD_forest")
 print("Loading Max Min Scaler")
 scaler = load_model("models/scaler/scaler")
 
