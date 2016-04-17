@@ -37,13 +37,35 @@ app = Flask(__name__)
 
 
 
-@app.route('/predict_json')
-def getPrediction_json():
+@app.route('/predict_json_by_id')
+def getPrediction_json_by_id():
+    result = {}
+    if request.method == "GET":
+        #try:
+        user_id = request.args['user_id']
+       
+        tweets = getTweets(user_id=user_id)
+    
+
+        report = pol_report(tweets)
+        profile = getUserProfile(user_id=user_id)
+        profile["profile_image_url"] = profile["profile_image_url"].replace("normal.", "400x400.")
+        #result = {"profile": profile, "report":report}
+        bipolar_words, BPD_words = tweets_2_words_frequency(tweets)
+        return jsonify(profile=profile, report=report, bipolar_words = bipolar_words, BPD_words = BPD_words)
+        
+
+
+@app.route('/predict_json_by_name')
+def getPrediction_json_by_name():
     result = {}
     if request.method == "GET":
         #try:
         screen_name = request.args['screen_name']
         tweets = getTweets(screen_name=screen_name)
+    
+
+
         report = pol_report(tweets)
         profile = getUserProfile(screen_name=screen_name)
         profile["profile_image_url"] = profile["profile_image_url"].replace("normal.", "400x400.")
