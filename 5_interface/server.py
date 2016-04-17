@@ -41,19 +41,19 @@ app = Flask(__name__)
 def getPrediction_json():
     result = {}
     if request.method == "GET":
-        try:
-            screen_name = request.args['screen_name']
-            tweets = getTweets(screen_name=screen_name)
-            report = pol_report(tweets)
-            profile = getUserProfile(screen_name=screen_name)
-            profile["profile_image_url"] = profile["profile_image_url"].replace("normal.", "400x400.")
-            #result = {"profile": profile, "report":report}
-            bipolar_words, BPD_words = tweets_2_words_frequency(tweets)
-            return jsonify(profile=profile, report=report, bipolar_words = bipolar_words, BPD_words = BPD_words)
-            
+        #try:
+        screen_name = request.args['screen_name']
+        tweets = getTweets(screen_name=screen_name)
+        report = pol_report(tweets)
+        profile = getUserProfile(screen_name=screen_name)
+        profile["profile_image_url"] = profile["profile_image_url"].replace("normal.", "400x400.")
+        #result = {"profile": profile, "report":report}
+        bipolar_words, BPD_words = tweets_2_words_frequency(tweets)
+        return jsonify(profile=profile, report=report, bipolar_words = bipolar_words, BPD_words = BPD_words)
+        
 
-        except Exception as e:
-            return jsonify(Error_message=str(e))
+        #except Exception as e:
+            #return jsonify(Error_message=str(e))
             
     
   
@@ -105,4 +105,5 @@ def index():
 
 if __name__ == '__main__':
     #app.run(debug=True)
+
     app.run(debug=False, host= '0.0.0.0',port=80)

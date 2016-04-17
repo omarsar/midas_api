@@ -14,6 +14,12 @@ from urllib.request import urlopen
 from idCrawler import getTweets
 import json
 
+getDict =  lambda timeSeries, i: json.loads(timeSeries.iloc[i].to_json())
+
+
+
+
+
 def thirdPronuonDetect(words, matcher=re.compile("@[a-z]+")):
     for word in words:
         if word == "@":
@@ -166,23 +172,6 @@ def groupFilter(group):
 
 
 
-def comboTracker(timeSeries, attribute= "polarity"):
-    array = timeSeries[attribute]
-    starter = array[0]
-    combo = 1
-    result = []
-    for cursor in array[1:]:
-        if starter == cursor:
-            combo += 1
-        else:
-            if combo > 1:
-                result.append((starter, combo))
-            starter = cursor
-            combo = 1
-    if combo > 1:
-         result.append((starter, combo))
-    return result
-
 def getHTTPRows(timeSeries):
     count = 0
     patterns = ['http://','https://']
@@ -235,33 +224,25 @@ def seriesContains(timeSeries,method ="first"):
 
 
     return match_function(timeSeries["text"].str.lower().str.split().values)
-    
-
-def firstPronuonDetect(words, matchers=["i","we","i'd","i'm"]):
-    for matcher in matchers:
-        if matcher in words:
-            return True
-    return False
 
 
-def getFirstPronounCount(timeSeries):
-    return np.sum(seriesContains(timeSeries))
-
-def comboTracker(timeSeries, attribute= "polarity"):
+def comboTracker(timeSeries, attribute= "polarity", time_threshold = 120):
     array = timeSeries[attribute]
     starter = array[0]
     combo = 1
     result = []
+    index = 0
     for cursor in array[1:]:
-        if starter == cursor:
+        index += 1
+        if starter == cursor and timeSeries["dt"][index-1] < time_threshold:
             combo += 1
         else:
             if combo > 1:
-                result.append((starter, combo))
+                result.append((starter, combo, index-combo))
             starter = cursor
             combo = 1
     if combo > 1:
-         result.append((starter, combo))
+         result.append((starter, combo, index-combo))
     return result
 
 
@@ -269,32 +250,20 @@ def comboTracker(timeSeries, attribute= "polarity"):
 
 def getCombosCount(timeSeries, matcher = -1, lowerbound = 2):
     combos = comboTracker(timeSeries)
-    combos_count = sum([hit for element, hit in combos if element == matcher and hit > lowerbound])
+    combos_count = sum([hit for element, hit, index in combos if element == matcher and hit > lowerbound])
     return combos_count
     
 
 
-def getFlips(timeSeries, attribute= 'polarity'):
-    flips = np.zeros(timeSeries.shape[0],dtype=bool)
-    polarity = timeSeries[attribute].values[:-1]
-    right_elements = timeSeries[attribute].values[1:]
-    flips[:-1] = (polarity * right_elements) < 0
-    return flips
 
-def getFlipsCount(timeSeries, upperbound=30, lowerbound = 0):
+
+def getFlipsCount(timeSeries, upperbound=60, lowerbound = 0):
     flips = getFlips(timeSeries)
     durations = getFlipsDuration(timeSeries, flips)
     return np.sum((durations > lowerbound) & (durations < upperbound) )
 
 
 
-def getFlipsDuration(timeSeries, flips):
-    timeSeries = timeSeries[flips]
-    timeSeries.loc[:,'dt'] = np.zeros(timeSeries.shape[0],dtype=float)
-    timeSeries.loc[:-1,'dt'] = (timeSeries.index[1:].values - timeSeries.index[:-1].values).astype('timedelta64[s]') / np.timedelta64(60, 's')
-    return timeSeries['dt'][:-1].values
-            
-            
             
       
 
@@ -317,6 +286,42 @@ def getEmotionRatio(timeSeries):
 
 
 
+def getCombosTweets(timeSeries,lowerbound=2):
+    combo_tweets = {"neg_tweets":[], "pos_tweets": []}
+    combo_result = comboTracker(timeSeries)
+    for polarity, hits, index in combo_result:
+        if polarity == -1 and hits > lowerbound:
+            combo_tweet = []
+            for i in range(index, index+hits):
+                combo_tweet.append(getDict(timeSeries, i))
+            combo_tweets["neg_tweets"].append(combo_tweet)
+        if polarity == 1 and hits > lowerbound:
+            combo_tweet = []
+            for i in range(index, index+hits):
+                combo_tweet.append(getDict(timeSeries,i))
+            combo_tweets["pos_tweets"].append(combo_tweet)
+    return combo_tweets
+
+def getFlipsTweets(timeSeries, upperbound=60):
+    flips = getFlips(timeSeries)
+    show_index = np.zeros(timeSeries.shape[0],dtype=bool)
+    flip_tweets = []
+    for i, value in enumerate(flips):
+        if value and timeSeries["dt"][i] < upperbound:
+
+            tweet_a = getDict(timeSeries, i)
+            tweet_b = getDict(timeSeries, i+1)
+            flip_tweets.append([tweet_a,tweet_b])
+
+
+
+    return flip_tweets
+        
+
+
+
+
+
 def getPOLFeature(groups):
     features = []
     for group in groups:
@@ -333,7 +338,7 @@ def getPOLFeature(groups):
             negative_combos = getCombosCount(timeSeries) / tweets_length
             positive_combos = getCombosCount(timeSeries,matcher=1) / tweets_length
 
-            first_pronoun_ratio = getFirstPronounCount(timeSeries) / tweets_length
+    
             age = getAge(timeSeries)
             gender = getGender(timeSeries)
             
@@ -360,12 +365,12 @@ def getPOLFeature(groups):
 
 
 
-def extract_features_pol(tweets):
+def getTimeSeries(tweets):
 	polared_tweets = sentiment_analyize(tweets)
 	processed_tweets = getUsersPolarities(polared_tweets)
 	timeSeries = timeSeriesTransform(processed_tweets)
-	feature = getPOLFeature([timeSeries])
-	return feature
+	
+	return timeSeries
 
 	
 def tweets_transform_tfidf(tweets):
@@ -379,12 +384,27 @@ def tfidf_classify(tweets):
 	result = tfidf_model.predict_proba([x])
 	return result[0]
 
+
+def getLabeledTweets(timeSeries,label, k =5):
+    tweets = []
+    for i in range(timeSeries.shape[0]):
+        if timeSeries["polarity"][i] == label:
+            tweets.append(getDict(timeSeries, i))
+            if len(tweets) >= k:
+                return tweets
+    return tweets
+
+
+
 def pol_report(tweets):
 
-    features = extract_features_pol(tweets)
+    timeSeries_list = getTimeSeries(tweets)
+    features = getPOLFeature([timeSeries_list])
+    feature = features[0]
+    timeSeries = timeSeries_list[0]
     bipolar_proba = bipolar_model.predict_proba(features)[0][1]
     BPD_proba = BPD_model.predict_proba(features)[0][1]
-    feature = scaler.transform(features)[0]
+    
     report = {}
     report["tweets_length"] = len(tweets)
     report["tweeting_frequency"] = feature[0]
@@ -400,6 +420,11 @@ def pol_report(tweets):
     report["gender"] = "Male" if features[0][10] < 0 else "Female"
     report["bipolar_probability"] = bipolar_proba
     report["BPD_probability"] = BPD_proba
+    report["flip_tweets"] = getFlipsTweets(timeSeries)
+    report["combo_tweets"] = getCombosTweets(timeSeries)
+    report["negative_tweets"] = getLabeledTweets(timeSeries, label=-1)
+    report["positive_tweets"] = getLabeledTweets(timeSeries, label = 1)
+
     return report
 
 
@@ -423,3 +448,5 @@ scaler = load_model("models/scaler/scaler")
 print("All models loaded")
 
 
+if __name__ ==  '__main__':
+    print("hi")
