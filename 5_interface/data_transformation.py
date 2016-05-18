@@ -14,9 +14,12 @@ from urllib.request import urlopen
 from idCrawler import getTweets
 import json
 
-getDict =  lambda timeSeries, i: json.loads(timeSeries.iloc[i].to_json())
+#getDict =  lambda timeSeries, i: json.loads(timeSeries.iloc[i].to_json())
 
-
+def getDict(timeSeries,i):
+    tweet_dict = json.loads(timeSeries.iloc[i].to_json())
+    tweet_dict["time"] = str(timeSeries.index[i])
+    return tweet_dict
 
 
 
@@ -385,13 +388,20 @@ def tfidf_classify(tweets):
 	return result[0]
 
 
-def getLabeledTweets(timeSeries,label, k =5):
+def getLabeledTweets(timeSeries,label="all", k =5):
     tweets = []
-    for i in range(timeSeries.shape[0]):
-        if timeSeries["polarity"][i] == label:
+    if label == "all":
+        for i in range(timeSeries.shape[0]):
             tweets.append(getDict(timeSeries, i))
             if len(tweets) >= k:
                 return tweets
+
+    else:
+        for i in range(timeSeries.shape[0]):
+            if timeSeries["polarity"][i] == label:
+                tweets.append(getDict(timeSeries, i))
+                if len(tweets) >= k:
+                    return tweets
     return tweets
 
 
@@ -422,8 +432,10 @@ def pol_report(tweets):
     report["BPD_probability"] = BPD_proba
     report["flip_tweets"] = getFlipsTweets(timeSeries)
     report["combo_tweets"] = getCombosTweets(timeSeries)
-    report["negative_tweets"] = getLabeledTweets(timeSeries, label=-1)
-    report["positive_tweets"] = getLabeledTweets(timeSeries, label = 1)
+    report["negative_tweets"] = getLabeledTweets(timeSeries, label=-1, k=40)
+    report["positive_tweets"] = getLabeledTweets(timeSeries, label = 1, k=40)
+    report["latest_tweets"] = getLabeledTweets(timeSeries, k=300)
+
 
     return report
 
