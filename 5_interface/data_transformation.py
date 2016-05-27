@@ -400,10 +400,18 @@ def getLabeledTweets(timeSeries,label="all", k =5):
 def get_batch_sizes(size):
     b = []
 
+    batch_size = 0
+    while (size - batch_size) > 0:
+        b.append(batch_size)
+        batch_size+=200
+    return b
+
+    '''
     for x in range(1,6):
         b.append(int(size/x))
     b.append(0)
     return list(reversed(b))
+    '''
 
 
 # Purpose: return information for the timeline
@@ -416,9 +424,9 @@ def generate_timeline(tweets):
     tweets_size = len(tweets)
 
     #batch_size = tweets_size / 5
-    batch_set = get_batch_sizes(tweets_size)
+    batch_set = get_batch_sizes(tweets_size)[:5]
 
-    for x in range(0,6):
+    for x in range(0,len(batch_set)):
         if batch_set[x] == tweets_size:
             continue
         else:    

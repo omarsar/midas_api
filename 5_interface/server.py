@@ -40,14 +40,13 @@ def getPrediction_json_by_id():
         user_id = request.args['user_id']
        
         tweets = getTweets(user_id=user_id)
-    
-
+        timeline = generate_timeline(tweets)
         report = pol_report(tweets)
         profile = getUserProfile(user_id=user_id)
         profile["profile_image_url"] = profile["profile_image_url"].replace("normal.", "400x400.")
         #result = {"profile": profile, "report":report}
         bipolar_words, BPD_words = tweets_2_words_frequency(tweets)
-        return jsonify(profile=profile, report=report, bipolar_words = bipolar_words, BPD_words = BPD_words)
+        return jsonify(profile=profile, report=report, bipolar_words = bipolar_words, BPD_words = BPD_words, timeline = timeline)
         
 
 # main route for comparing two twitter users
@@ -77,10 +76,7 @@ def getPrediction():
             tweets = getTweets(screen_name=screen_name)
             report = pol_report(tweets)
             profile = getUserProfile(screen_name=screen_name)
-            profile["profile_image_url"] = profile["profile_image_url"].replace("normal.", "400x400.")
-
-            
-            
+            profile["profile_image_url"] = profile["profile_image_url"].replace("normal.", "400x400.")      
 
         except Exception as e:
             report = {"result":str(e)}
