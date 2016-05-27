@@ -36,8 +36,6 @@ def getTweets(screen_name=None, user_id=None, num = 0, include_rts = False):
 			warn("404 not found")
 			return []
 
-
-
 	totalTweets = tweets
 	while len(tweets) >= 2:
 		max_id = tweets[-1]["id"]
@@ -67,8 +65,7 @@ def getTweets(screen_name=None, user_id=None, num = 0, include_rts = False):
 	else:
 		return totalTweets[:num]
 
-	
-	
+
 
 def langDetect(tweets ,lang, threshold, method = "simple"):
 	if len(tweets) == 0:
@@ -129,11 +126,6 @@ def getFollowers(screen_name):
 			return []
 
 
-
-
-
-
-
 def getUserProfile(user_id=None, screen_name=None):
 
 	if user_id is None and screen_name is None:
@@ -175,15 +167,7 @@ def getUserProfile(user_id=None, screen_name=None):
 			except TwythonError:
 				print("404 not found")
 				return []
-
 		
-		
-
-
-
-
-
-
 
 if __name__ == '__main__':
 	#print(getTweets(screen_name="BigDataBlogs", num =10))

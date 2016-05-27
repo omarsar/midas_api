@@ -4,14 +4,13 @@ import os
 from sklearn.externals import joblib
 from idCrawler import getTweets, getUserProfile
 from data_transformation import pol_report
+from data_transformation import generate_timeline
 import json
 
 
 bipolar_unigrams = set(json.load(open("bipolar_unigrams_3000.json")))
 
 BPD_unigrams = set(json.load(open("BPD_unigrams_3000.json")))
-
-
 
 def tweets_2_words_frequency(tweets):
     bipolar_words = {}
@@ -30,11 +29,7 @@ def tweets_2_words_frequency(tweets):
     return bipolar_words, BPD_words
 
 
-
-
 app = Flask(__name__)
-
-
 
 
 @app.route('/predict_json_by_id')
@@ -55,6 +50,7 @@ def getPrediction_json_by_id():
         return jsonify(profile=profile, report=report, bipolar_words = bipolar_words, BPD_words = BPD_words)
         
 
+# main route for comparing two twitter users
 
 @app.route('/predict_json_by_name')
 def getPrediction_json_by_name():
@@ -63,25 +59,15 @@ def getPrediction_json_by_name():
         #try:
         screen_name = request.args['screen_name']
         tweets = getTweets(screen_name=screen_name)
-    
-
-
+        timeline = generate_timeline(tweets)
         report = pol_report(tweets)
         profile = getUserProfile(screen_name=screen_name)
         profile["profile_image_url"] = profile["profile_image_url"].replace("normal.", "400x400.")
         #result = {"profile": profile, "report":report}
         bipolar_words, BPD_words = tweets_2_words_frequency(tweets)
-        return jsonify(profile=profile, report=report, bipolar_words = bipolar_words, BPD_words = BPD_words)
+        return jsonify(profile=profile, report=report, bipolar_words = bipolar_words, BPD_words = BPD_words, timeline = timeline)
         
-
-        #except Exception as e:
-            #return jsonify(Error_message=str(e))
-            
     
-  
-
-
-
 @app.route('/predict')
 def getPrediction():
    
@@ -120,12 +106,7 @@ def index():
     return render_template('index.html', errors=errors, results=results)
 
 
-
-
-
-
-
 if __name__ == '__main__':
     #app.run(debug=True)
 
-    app.run(debug=False, host= '0.0.0.0',port=80)
+    app.run(debug=True, host= '0.0.0.0',port=1024)

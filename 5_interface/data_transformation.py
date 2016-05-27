@@ -13,6 +13,8 @@ from sklearn.externals import joblib
 from urllib.request import urlopen
 from idCrawler import getTweets
 import json
+import sys
+import time
 
 #getDict =  lambda timeSeries, i: json.loads(timeSeries.iloc[i].to_json())
 
@@ -322,9 +324,6 @@ def getFlipsTweets(timeSeries, upperbound=60):
         
 
 
-
-
-
 def getPOLFeature(groups):
     features = []
     for group in groups:
@@ -359,12 +358,6 @@ def getPOLFeature(groups):
             
         features.append(feature)
     return features[0]
-
-
-    
-
-
-
 
 
 
@@ -404,8 +397,50 @@ def getLabeledTweets(timeSeries,label="all", k =5):
                     return tweets
     return tweets
 
+def get_batch_sizes(size):
+    b = []
+
+    for x in range(1,6):
+        b.append(int(size/x))
+    b.append(0)
+    return list(reversed(b))
 
 
+# Purpose: return information for the timeline
+def generate_timeline(tweets):    
+    # do the selection by two weeks
+    bipolar_probabilites = {}
+    bpd_probabilties = {}
+    #tweets = pd.DataFrame.from_dict(tweets)
+    #tweets['created_at'] = tweets['created_at'].astype('datetime64[ns]')
+    tweets_size = len(tweets)
+
+    #batch_size = tweets_size / 5
+    batch_set = get_batch_sizes(tweets_size)
+
+    for x in range(0,6):
+        if batch_set[x] == tweets_size:
+            continue
+        else:    
+            set_tweets = tweets[batch_set[x]:tweets_size]
+        
+        timeSeries_list = getTimeSeries(set_tweets)
+        features = getPOLFeature([timeSeries_list])
+        feature = features[0]
+        timeSeries = timeSeries_list[0]
+        bipolar_proba = bipolar_model.predict_proba(features)[0][1]
+        BPD_proba = BPD_model.predict_proba(features)[0][1]
+
+        bipolar_probabilites[str(datetime.date(tweets[batch_set[x]]['created_at']))] = bipolar_proba
+        bpd_probabilties[str(datetime.date(tweets[batch_set[x]]['created_at']))] = BPD_proba
+    
+    timeline_data = {}
+    timeline_data["bipolar"] = bipolar_probabilites
+    timeline_data["bpd"] = bpd_probabilties
+
+    return timeline_data
+
+# Get Pattern of life report for users
 def pol_report(tweets):
 
     timeSeries_list = getTimeSeries(tweets)
